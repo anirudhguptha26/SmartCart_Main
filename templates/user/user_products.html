@@ -1,0 +1,86 @@
+{% extends "user/base_user.html" %}
+{% block title %}Shop | SmartCart{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="breadcrumb">
+        <a href="/user-dashboard">Home</a>
+        <span class="sep">›</span>
+        <span class="current">All Products</span>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+        <form method="GET" action="/user/products" style="display:flex;gap:0.6rem;align-items:flex-end;flex-wrap:wrap;width:100%;">
+            <div class="form-group" style="flex:1;min-width:180px;margin:0;">
+                <label class="form-label">Search Products</label>
+                <input type="text" name="search" class="form-control search-input" placeholder="Search..." value="{{ request.args.get('search', '') }}">
+            </div>
+            <div class="form-group" style="min-width:150px;margin:0;">
+                <label class="form-label">Category</label>
+                <select name="category" class="form-control">
+                    <option value="">All Categories</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat.category }}" {% if request.args.get('category') == cat.category %}selected{% endif %}>{{ cat.category }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">🔍 Search</button>
+            {% if request.args.get('search') or request.args.get('category') %}
+            <a href="/user/products" class="btn btn-outline">✕ Clear</a>
+            {% endif %}
+        </form>
+    </div>
+
+    <div style="font-size:0.82rem;color:var(--gray-500);margin-bottom:0.75rem;">
+        Showing <strong>{{ products|length }}</strong> result(s)
+        {% if request.args.get('category') %} in <strong>{{ request.args.get('category') }}</strong>{% endif %}
+        {% if request.args.get('search') %} for <strong>"{{ request.args.get('search') }}"</strong>{% endif %}
+    </div>
+
+    {% if products %}
+    <div style="background:var(--white);border:1px solid var(--gray-300);border-radius:var(--radius-sm);">
+        <div class="products-grid">
+            {% for product in products %}
+            <div class="product-card" onclick="window.location='/user/product/{{ product.product_id }}'">
+                <div class="product-card-img-wrap">
+                    <img src="/static/uploads/product_images/{{ product.image }}" class="product-card-img" alt="{{ product.name }}" loading="lazy">
+                </div>
+                <div class="product-card-body">
+                    <div class="product-card-name">{{ product.name }}</div>
+                    <div class="product-card-rating">
+                        <span class="rating-stars">★ 4.1</span>
+                        <span class="rating-count">({{ (product.product_id * 137) % 2000 + 50 }})</span>
+                    </div>
+                    <div class="product-card-price">
+                        <span class="price-main">₹{{ product.price }}</span>
+                    </div>
+                    <div class="product-card-stock {% if product.quantity == 0 %}out-stock{% elif product.quantity <= 5 %}low-stock{% else %}in-stock{% endif %}">
+                        {% if product.quantity == 0 %}Out of Stock
+                        {% elif product.quantity <= 5 %}Only {{ product.quantity }} left!
+                        {% else %}In Stock{% endif %}
+                    </div>
+                </div>
+                {% if product.quantity > 0 %}
+                <div class="product-card-footer">
+                    <a href="/user/add-to-cart/{{ product.product_id }}" class="btn btn-amazon btn-full btn-sm" onclick="event.stopPropagation();">🛒 Add to Cart</a>
+                </div>
+                {% else %}
+                <div class="product-card-footer">
+                    <span class="btn btn-outline btn-full btn-sm" style="cursor:not-allowed;opacity:0.6;">Out of Stock</span>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <div class="empty-state" style="background:var(--white);border:1px solid var(--gray-300);border-radius:var(--radius-sm);">
+        <div class="icon">🔍</div>
+        <h3>No products found</h3>
+        <p>Try adjusting your search or browse all categories.</p>
+        <a href="/user/products" class="btn btn-primary">Browse All Products</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

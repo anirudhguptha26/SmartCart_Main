@@ -1,0 +1,227 @@
+{% extends "user/base.html" %}
+{% block title %}Order Details{% endblock %}
+
+{% block content %}
+<div class="container" style="margin-top: 2rem;">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Order #{{ order.order_id }}</h2>
+            <span style="font-size:0.75rem;color:var(--gray-500);">
+                Placed on {{ order.created_at|fdate }}
+            </span>
+        </div>
+
+        <div class="card-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-bottom:2rem;">
+                <!-- Order Details -->
+                <div>
+                    <h4 style="margin-bottom:1rem;color:var(--gray-900);">📦 Order Details</h4>
+                    <div style="line-height:1.8;">
+                        <div>
+                            <span style="color:var(--gray-600);">Order ID:</span>
+                            <strong>#{{ order.order_id }}</strong>
+                        </div>
+                        <div>
+                            <span style="color:var(--gray-600);">Status:</span>
+                            <span class="badge badge-success">{{ order.payment_status|upper }}</span>
+                        </div>
+                        <div>
+                            <span style="color:var(--gray-600);">Amount:</span>
+                            <strong>₹{{ order.amount }}</strong>
+                        </div>
+                        <div>
+                            <span style="color:var(--gray-600);">Date:</span>
+                            {{ order.created_at|fdate }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Delivery Address -->
+                <div>
+                    <h4 style="margin-bottom:1rem;color:var(--gray-900);">📍 Delivery Address</h4>
+                    <div style="line-height:1.8;color:var(--gray-700);">
+                        {{ order.delivery_address }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Items Table -->
+            <h4 style="margin-bottom:1rem;color:var(--gray-900);">📋 Items Ordered</h4>
+            <div style="overflow-x:auto;margin-bottom:2rem;">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                            <th>Total</th>
+                            <th style="text-align:center;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                        <tr>
+                            <td>{{ item.product_name }}</td>
+                            <td>{{ item.quantity }}</td>
+                            <td>₹{{ item.price }}</td>
+                            <td><strong>₹{{ item.price * item.quantity }}</strong></td>
+                            <td style="text-align:center;">
+                                {% if returns.get(item.product_id) == 'pending' %}
+                                    <span class="badge badge-warning">⏳ Return Pending</span>
+                                {% elif returns.get(item.product_id) == 'approved' %}
+                                    <span class="badge badge-success">✅ Return Approved</span>
+                                {% else %}
+                                    <a href="/user/request-return/{{ order.order_id }}/{{ item.product_id }}" 
+                                       class="btn btn-danger btn-sm">
+                                        🔄 Return Item
+                                    </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Total Amount -->
+            <div style="text-align:right;padding-top:1rem;border-top:1px solid var(--gray-300);">
+                <h3 style="color:var(--danger);">
+                    Total: ₹{{ order.amount }}
+                </h3>
+            </div>
+        </div>
+
+        <div class="card-footer" style="display:flex;gap:1rem;justify-content:space-between;">
+            <a href="/user/my-orders" class="btn btn-outline">← Back to Orders</a>
+            <a href="/user/download-invoice/{{ order.order_id }}" class="btn btn-blue">
+                📄 Download Invoice
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .container {
+        max-width: 900px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .card {
+        background-color: white;
+        border-radius: 6px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid #e5e7eb;
+        background-color: #f9fafb;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .card-footer {
+        padding: 1.5rem;
+        border-top: 1px solid #e5e7eb;
+        background-color: #f9fafb;
+    }
+
+    .card-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 0.5rem;
+    }
+
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.875rem;
+    }
+
+    .table thead {
+        background-color: #f3f4f6;
+    }
+
+    .table thead th {
+        padding: 1rem 1.25rem;
+        text-align: left;
+        font-weight: 600;
+        color: #374151;
+        border-bottom: 2px solid #d1d5db;
+    }
+
+    .table tbody td {
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 99px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .badge-success {
+        background-color: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+    }
+
+    .badge-warning {
+        background-color: rgba(245, 158, 11, 0.1);
+        color: #f59e0b;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    .btn-danger {
+        background-color: #ef4444;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background-color: #dc2626;
+    }
+
+    .btn-outline {
+        background-color: transparent;
+        color: #3b82f6;
+        border: 1px solid #3b82f6;
+    }
+
+    .btn-outline:hover {
+        background-color: #3b82f6;
+        color: white;
+    }
+
+    .btn-blue {
+        background-color: #3b82f6;
+        color: white;
+    }
+
+    .btn-blue:hover {
+        background-color: #2563eb;
+    }
+
+    .btn-sm {
+        padding: 0.5rem 1rem;
+        font-size: 0.75rem;
+    }
+</style>
+{% endblock %}

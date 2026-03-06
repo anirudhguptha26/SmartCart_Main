@@ -1,0 +1,122 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Dashboard | Admin{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+
+<!-- Pending Requests Alert -->
+{% if pending_requests > 0 %}
+<div class="approval-pending">
+    ⚠️ <strong>{{ pending_requests }} pending admin registration request(s)</strong> awaiting your approval.
+    <a href="/admin/requests" style="color: #d84315; text-decoration: underline; margin-left: 0.5rem; font-weight: 700;">Review Now →</a>
+</div>
+{% endif %}
+
+<!-- Statistics Grid -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon blue">📦</div>
+        <div class="stat-info">
+            <div class="stat-label">Total Products</div>
+            <div class="stat-value">{{ total_products }}</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon orange">🛒</div>
+        <div class="stat-info">
+            <div class="stat-label">Total Orders</div>
+            <div class="stat-value">{{ total_orders }}</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon green">💰</div>
+        <div class="stat-info">
+            <div class="stat-label">Revenue (₹)</div>
+            <div class="stat-value">{{ "%.0f"|format(total_revenue) }}</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon purple">👥</div>
+        <div class="stat-info">
+            <div class="stat-label">Registered Users</div>
+            <div class="stat-value">{{ total_users }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions & Recent Orders -->
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;" class="dashboard-grid">
+
+    <!-- Quick Actions -->
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">⚡ Quick Actions</span>
+        </div>
+        <div class="card-body" style="display: flex; flex-direction: column; gap: 0.6rem;">
+            <a href="/admin/add-item" class="btn btn-primary btn-full">➕ Add New Product</a>
+            <a href="/admin/item-list" class="btn btn-outline btn-full">📋 View All Products</a>
+            <a href="/admin/orders" class="btn btn-outline btn-full">📦 Manage Orders</a>
+            {% if session.get('is_super_admin') %}
+            <a href="/admin/requests" class="btn btn-outline btn-full" style="{% if pending_requests > 0 %}border-color: #f9a825; color: #6d4c00 !important;{% endif %}">
+                👥 Admin Requests {% if pending_requests > 0 %}<span style="background: #f9a825; color: #111; padding: 0.15rem 0.5rem; border-radius: 3px; font-size: 0.7rem; margin-left: 0.25rem;">({{ pending_requests }})</span>{% endif %}
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Recent Orders -->
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">🕐 Recent Orders</span>
+            <a href="/admin/orders" class="btn btn-outline btn-sm">View All</a>
+        </div>
+        <div class="table-wrapper">
+            {% if recent_orders %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Order #</th>
+                        <th>Customer</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in recent_orders %}
+                    <tr>
+                        <td><a href="/admin/order/{{ order.order_id }}" style="font-weight: 700; color: #0066cc;">#{{ order.order_id }}</a></td>
+                        <td style="font-size: 0.82rem;">{{ order.user_name }}</td>
+                        <td style="font-weight: 700;">₹{{ order.amount }}</td>
+                        <td>
+                            <span class="badge {% if order.payment_status == 'paid' %}badge-success{% else %}badge-warning{% endif %}">
+                                {{ order.payment_status.title() }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state" style="padding: 1.5rem;">
+                <div class="icon" style="font-size: 2rem;">📦</div>
+                <p style="color: #aaa;">No orders yet.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
+<style>
+    @media (max-width: 768px) {
+        .dashboard-grid {
+            grid-template-columns: 1fr !important;
+        }
+    }
+</style>
+
+{% endblock %}

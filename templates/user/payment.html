@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartCart — Checkout</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { background: #f0f2f5; font-family: 'Segoe UI', sans-serif; }
+        .navbar-brand span { color: #0d6efd; font-weight: 700; }
+
+        .checkout-wrapper {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 16px;
+        }
+        .checkout-card {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,.10);
+            overflow: hidden;
+            width: 100%;
+            max-width: 820px;
+        }
+
+        /* Left panel */
+        .summary-panel {
+            background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+            color: #fff;
+            padding: 40px 32px;
+        }
+        .summary-panel h4 { font-weight: 700; margin-bottom: 24px; }
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,.2);
+            font-size: .95rem;
+        }
+        .summary-item:last-child { border-bottom: none; }
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 2px solid rgba(255,255,255,.4);
+        }
+        .secure-badge {
+            margin-top: 28px;
+            background: rgba(255,255,255,.15);
+            border-radius: 10px;
+            padding: 12px 16px;
+            font-size: .85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .pay-methods {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+            justify-content: center;
+        }
+        .pay-method-badge {
+            background: rgba(255,255,255,.15);
+            border: 1.5px solid rgba(255,255,255,.3);
+            border-radius: 8px;
+            padding: 6px 14px;
+            font-size: .8rem;
+            font-weight: 600;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Right panel */
+        .form-panel { padding: 40px 32px; }
+        .form-panel h4 { font-weight: 700; margin-bottom: 24px; color: #1a1a2e; }
+        .form-label { font-weight: 600; font-size: .88rem; color: #555; }
+        .form-control {
+            border-radius: 8px;
+            border: 1.5px solid #dee2e6;
+            padding: 10px 14px;
+            font-size: .95rem;
+            transition: border-color .2s;
+        }
+        .form-control:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 3px rgba(13,110,253,.12);
+        }
+        .form-control.is-invalid { border-color: #dc3545; }
+        .invalid-feedback { font-size: .82rem; color: #dc3545; display: none; }
+        .form-control.is-invalid + .invalid-feedback { display: block; }
+
+        .btn-pay {
+            background: linear-gradient(135deg, #0d6efd, #0a58ca);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 14px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            width: 100%;
+            cursor: pointer;
+            transition: opacity .2s, transform .1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .btn-pay:hover  { opacity: .92; transform: translateY(-1px); }
+        .btn-pay:active { transform: translateY(0); }
+        .btn-pay:disabled { opacity: .65; cursor: not-allowed; transform: none; }
+
+        /* Loading overlay */
+        #loading-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.5);
+            z-index: 9999;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 1.1rem;
+            gap: 16px;
+        }
+        #loading-overlay.show { display: flex; }
+        .spinner-ring {
+            width: 56px; height: 56px;
+            border: 5px solid rgba(255,255,255,.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin .8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media (max-width: 767px) {
+            .summary-panel, .form-panel { padding: 28px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-light bg-white shadow-sm px-4 py-3">
+    <a class="navbar-brand fw-bold fs-4" href="/user-dashboard">
+        <i class="bi bi-cart3 text-primary me-2"></i>Smart<span>Cart</span>
+    </a>
+    <div class="d-flex align-items-center gap-2 text-muted" style="font-size:.9rem;">
+        <i class="bi bi-lock-fill text-success"></i> Secured Checkout
+    </div>
+</nav>
+
+<!-- Flash messages -->
+<div class="container mt-3">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+</div>
+
+<!-- Loading overlay -->
+<div id="loading-overlay">
+    <div class="spinner-ring"></div>
+    <span>Processing your payment…</span>
+</div>
+
+<!-- Main -->
+<div class="checkout-wrapper">
+    <div class="checkout-card">
+        <div class="row g-0">
+
+            <!-- Left: Order Summary -->
+            <div class="col-md-5 summary-panel">
+                <h4><i class="bi bi-receipt me-2"></i>Order Summary</h4>
+
+                {% set cart = session.get('cart', {}) %}
+                {% for pid, item in cart.items() %}
+                <div class="summary-item">
+                    <span>
+                        {{ item['name'] }}
+                        <small class="d-block opacity-75">Qty: {{ item['quantity'] }}</small>
+                    </span>
+                    <span>₹{{ "%.2f"|format(item['price'] * item['quantity']) }}</span>
+                </div>
+                {% endfor %}
+
+                <div class="total-row">
+                    <span>Total</span>
+                    <span>₹{{ "%.2f"|format(amount) }}</span>
+                </div>
+
+                <div class="secure-badge">
+                    <i class="bi bi-shield-check fs-5"></i>
+                    <div>
+                        <strong>100% Secure Payment</strong><br>
+                        <span class="opacity-75">Powered by Razorpay</span>
+                    </div>
+                </div>
+
+                <div class="pay-methods mt-4">
+                    <div class="pay-method-badge"><i class="bi bi-phone"></i> UPI</div>
+                    <div class="pay-method-badge"><i class="bi bi-credit-card"></i> Cards</div>
+                    <div class="pay-method-badge"><i class="bi bi-bank"></i> Net Banking</div>
+                    <div class="pay-method-badge"><i class="bi bi-wallet2"></i> Wallets</div>
+                </div>
+            </div>
+
+            <!-- Right: Delivery + Pay -->
+            <div class="col-md-7 form-panel">
+                <h4><i class="bi bi-geo-alt me-2 text-primary"></i>Delivery Details</h4>
+
+                <!-- Hidden form submitted after Razorpay success -->
+                <form id="payment-form" action="/verify-payment" method="POST">
+                    <input type="hidden" name="razorpay_payment_id" id="razorpay_payment_id">
+                    <input type="hidden" name="razorpay_order_id"   id="razorpay_order_id">
+                    <input type="hidden" name="razorpay_signature"  id="razorpay_signature">
+                    <input type="hidden" name="delivery_name"    id="h_name">
+                    <input type="hidden" name="delivery_phone"   id="h_phone">
+                    <input type="hidden" name="delivery_address" id="h_address">
+                    <input type="hidden" name="delivery_city"    id="h_city">
+                    <input type="hidden" name="delivery_state"   id="h_state">
+                    <input type="hidden" name="delivery_pincode" id="h_pincode">
+                </form>
+
+                <!-- Visible delivery fields -->
+                <div class="row g-3 mb-4">
+                    <div class="col-12">
+                        <label class="form-label">Full Name *</label>
+                        <input type="text" id="d_name" class="form-control"
+                               placeholder="Enter your full name"
+                               value="{{ user['name'] }}">
+                        <div class="invalid-feedback">Please enter your full name.</div>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Phone Number *</label>
+                        <input type="tel" id="d_phone" class="form-control"
+                               placeholder="10-digit mobile number"
+                               value="{{ user['phone'] or '' }}" maxlength="10">
+                        <div class="invalid-feedback">Please enter your phone number.</div>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Address *</label>
+                        <textarea id="d_address" class="form-control" rows="2"
+                                  placeholder="House no, Street, Area">{{ user['address'] or '' }}</textarea>
+                        <div class="invalid-feedback">Please enter your address.</div>
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label">City *</label>
+                        <input type="text" id="d_city" class="form-control" placeholder="City">
+                        <div class="invalid-feedback">Required.</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">State *</label>
+                        <input type="text" id="d_state" class="form-control" placeholder="State">
+                        <div class="invalid-feedback">Required.</div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Pincode *</label>
+                        <input type="text" id="d_pincode" class="form-control"
+                               placeholder="560001" maxlength="6">
+                        <div class="invalid-feedback">Required.</div>
+                    </div>
+                </div>
+
+                <!-- Pay button -->
+                <button id="pay-button" class="btn-pay">
+                    <i class="bi bi-lock-fill"></i>
+                    Pay ₹{{ "%.2f"|format(amount) }} Securely
+                </button>
+
+                <p class="text-center text-muted mt-3" style="font-size:.82rem;">
+                    <i class="bi bi-shield-lock me-1"></i>
+                    Your payment is encrypted &amp; secured by Razorpay.
+                    Pay via UPI, Cards, Net Banking or Wallets.
+                </p>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // Validate all delivery fields
+    function validateDelivery() {
+        const fields = ['d_name', 'd_phone', 'd_address', 'd_city', 'd_state', 'd_pincode'];
+        let valid = true;
+        fields.forEach(function(id) {
+            const el = document.getElementById(id);
+            if (!el.value.trim()) {
+                el.classList.add('is-invalid');
+                valid = false;
+            } else {
+                el.classList.remove('is-invalid');
+            }
+        });
+        return valid;
+    }
+
+    // Copy visible fields to hidden form inputs
+    function copyDeliveryToHidden() {
+        document.getElementById('h_name').value    = document.getElementById('d_name').value.trim();
+        document.getElementById('h_phone').value   = document.getElementById('d_phone').value.trim();
+        document.getElementById('h_address').value = document.getElementById('d_address').value.trim();
+        document.getElementById('h_city').value    = document.getElementById('d_city').value.trim();
+        document.getElementById('h_state').value   = document.getElementById('d_state').value.trim();
+        document.getElementById('h_pincode').value = document.getElementById('d_pincode').value.trim();
+    }
+
+    function resetPayButton() {
+        const btn = document.getElementById('pay-button');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-lock-fill"></i> Pay ₹{{ "%.2f"|format(amount) }} Securely';
+    }
+
+    // Razorpay options
+    var options = {
+        "key":         "{{ key_id }}",
+        "amount":      {{ (amount * 100) | int }},
+        "currency":    "INR",
+        "name":        "SmartCart",
+        "description": "Order Payment",
+        "order_id":    "{{ order_id }}",
+        "retry": { "enabled": true, "max_count": 3 },
+        "handler": function (response) {
+            document.getElementById('loading-overlay').classList.add('show');
+            document.getElementById('razorpay_payment_id').value = response.razorpay_payment_id;
+            document.getElementById('razorpay_order_id').value   = response.razorpay_order_id;
+            document.getElementById('razorpay_signature').value  = response.razorpay_signature;
+            document.getElementById('payment-form').submit();
+        },
+        "prefill": {
+            "name":    "{{ user['name'] | e }}",
+            "email":   "{{ user['email'] | e }}",
+            "contact": "{{ user['phone'] or '' }}"
+        },
+        "theme": { "color": "#0d6efd" },
+        "modal": {
+            "backdropclose": false,
+            "escape": false,
+            "ondismiss": function () {
+                document.getElementById('loading-overlay').classList.remove('show');
+                resetPayButton();
+            }
+        }
+    };
+
+    var rzp = new Razorpay(options);
+
+    // Handle payment failure
+    rzp.on('payment.failed', function (response) {
+        document.getElementById('loading-overlay').classList.remove('show');
+        resetPayButton();
+        alert('Payment failed: ' + (response.error.description || 'Please try again.'));
+    });
+
+    // Pay button
+    document.getElementById('pay-button').addEventListener('click', function (e) {
+        e.preventDefault();
+        if (!validateDelivery()) return;
+        copyDeliveryToHidden();
+
+        this.disabled = true;
+        this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Opening Payment…';
+
+        document.getElementById('loading-overlay').classList.add('show');
+
+        setTimeout(function () {
+            document.getElementById('loading-overlay').classList.remove('show');
+            rzp.open();
+        }, 500);
+    });
+
+    // Clear invalid on typing
+    document.querySelectorAll('.form-control').forEach(function(el) {
+        el.addEventListener('input', function() {
+            this.classList.remove('is-invalid');
+        });
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,105 @@
+{% extends "user/base_user.html" %}
+{% block title %}{{ product.name }} | SmartCart{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="breadcrumb">
+        <a href="/user-dashboard">Home</a>
+        <span class="sep">›</span>
+        <a href="/user/products">Shop</a>
+        <span class="sep">›</span>
+        <a href="/user/products?category={{ product.category }}">{{ product.category }}</a>
+        <span class="sep">›</span>
+        <span class="current">{{ product.name[:40] }}{% if product.name|length > 40 %}...{% endif %}</span>
+    </div>
+
+    <div class="product-detail-wrapper">
+        <!-- Image -->
+        <div class="product-detail-img-box">
+            <img src="/static/uploads/product_images/{{ product.image }}" class="product-detail-img" alt="{{ product.name }}">
+        </div>
+
+        <!-- Info Panel -->
+        <div class="product-detail-info">
+            <div class="product-detail-category">{{ product.category }}</div>
+            <h1 class="product-detail-name">{{ product.name }}</h1>
+
+            <div style="display:flex;align-items:center;gap:0.5rem;margin:0.25rem 0;">
+                <span class="rating-stars" style="font-size:0.85rem;">★ 4.2</span>
+                <span style="font-size:0.82rem;color:#007185;border-left:1px solid var(--gray-300);padding-left:0.5rem;">1,234 ratings</span>
+            </div>
+
+            <hr class="product-detail-divider">
+
+            <div class="product-detail-price-wrap">
+                <div class="product-detail-mrp">M.R.P.: <span>₹{{ "%.0f"|format(product.price * 1.2) }}</span></div>
+                <div>
+                    <span style="font-size:1.1rem;color:var(--danger);font-weight:600;">-17%</span>
+                    <span class="product-detail-price"><sup>₹</sup>{{ "%.2f"|format(product.price) }}</span>
+                </div>
+                <div style="font-size:0.78rem;color:var(--gray-500);margin-top:0.2rem;">Inclusive of all taxes</div>
+            </div>
+
+            <!-- Stock Status -->
+            <div style="margin:0.5rem 0;">
+                {% if product.quantity == 0 %}
+                <span style="font-size:1.1rem;color:var(--danger);font-weight:700;">Out of Stock</span>
+                {% elif product.quantity <= 5 %}
+                <span style="font-size:0.88rem;color:var(--danger);font-weight:700;">⚠️ Only {{ product.quantity }} left in stock — order soon!</span>
+                {% else %}
+                <span style="font-size:1rem;color:var(--success);font-weight:700;">✅ In Stock</span>
+                {% endif %}
+            </div>
+
+            <hr class="product-detail-divider">
+
+            <div class="product-detail-desc">
+                <strong style="display:block;margin-bottom:0.35rem;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.5px;color:var(--gray-500);">About this item</strong>
+                {{ product.description }}
+            </div>
+
+            <!-- Trust badges -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin:1rem 0;padding:0.875rem;background:var(--gray-50);border:1px solid var(--gray-300);border-radius:var(--radius-xs);">
+                <div style="font-size:0.78rem;color:var(--gray-700);display:flex;align-items:center;gap:0.4rem;"><span>🚚</span> Fast Delivery</div>
+                <div style="font-size:0.78rem;color:var(--gray-700);display:flex;align-items:center;gap:0.4rem;"><span>🔒</span> Secure Payment</div>
+                <div style="font-size:0.78rem;color:var(--gray-700);display:flex;align-items:center;gap:0.4rem;"><span>✅</span> Genuine Product</div>
+                <div style="font-size:0.78rem;color:var(--gray-700);display:flex;align-items:center;gap:0.4rem;"><span>📄</span> PDF Invoice</div>
+            </div>
+
+            <div class="product-detail-actions">
+                {% if product.quantity > 0 %}
+                <a href="/user/add-to-cart/{{ product.product_id }}" class="btn btn-amazon btn-lg">🛒 Add to Cart</a>
+                <a href="/user/add-to-cart/{{ product.product_id }}" class="btn btn-primary btn-lg">⚡ Buy Now</a>
+                {% else %}
+                <span class="btn btn-outline btn-lg" style="cursor:not-allowed;opacity:0.6;">Currently Unavailable</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Products -->
+    {% if related %}
+    <div style="margin-top:1.5rem;background:var(--white);border:1px solid var(--gray-300);border-radius:var(--radius-sm);padding:1.25rem;">
+        <div class="section-header">
+            <div class="section-title">Customers also viewed</div>
+        </div>
+        <div class="products-grid" style="border:none;">
+            {% for item in related %}
+            <div class="product-card" onclick="window.location='/user/product/{{ item.product_id }}'">
+                <div class="product-card-img-wrap">
+                    <img src="/static/uploads/product_images/{{ item.image }}" class="product-card-img" alt="{{ item.name }}" loading="lazy">
+                </div>
+                <div class="product-card-body">
+                    <div class="product-card-name">{{ item.name }}</div>
+                    <div class="product-card-price"><span class="price-main">₹{{ item.price }}</span></div>
+                    <div class="product-card-stock {% if item.quantity == 0 %}out-stock{% elif item.quantity <= 5 %}low-stock{% else %}in-stock{% endif %}">
+                        {% if item.quantity == 0 %}Out of Stock{% elif item.quantity <= 5 %}Only {{ item.quantity }} left!{% else %}In Stock{% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

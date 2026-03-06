@@ -1,0 +1,54 @@
+{% extends "user/base_user.html" %}
+{% block title %}My Account | SmartCart{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div style="max-width:580px;margin:0 auto;">
+        <h1 style="font-size:1.2rem;font-weight:700;margin-bottom:1rem;">Your Account</h1>
+
+        <div class="card" style="margin-bottom:1rem;">
+            <div class="card-body" style="display:flex;align-items:center;gap:1.25rem;">
+                <div style="width:70px;height:70px;border-radius:50%;background:var(--amazon-orange);display:flex;align-items:center;justify-content:center;font-size:1.75rem;font-weight:800;color:var(--amazon-navy);flex-shrink:0;">{{ user.name[0].upper() }}</div>
+                <div>
+                    <h2 style="font-size:1.1rem;font-weight:700;color:var(--gray-900);">{{ user.name }}</h2>
+                    <p style="color:var(--gray-500);font-size:0.82rem;">{{ user.email }}</p>
+                    <span class="badge badge-success" style="margin-top:0.35rem;">✅ Verified Customer</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><span class="card-title">Edit Profile</span></div>
+            <div class="card-body">
+                <form method="POST" action="/user/profile">
+                    <div class="form-group">
+                        <label class="form-label">Your name</label>
+                        <input type="text" name="name" class="form-control" value="{{ user.name }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email address</label>
+                        <input type="email" class="form-control" value="{{ user.email }}" disabled style="background:var(--gray-100);cursor:not-allowed;">
+                        <span class="form-hint">Email cannot be changed</span>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Mobile number</label>
+                        <input type="tel" name="phone" class="form-control" value="{{ user.phone or '' }}" placeholder="+91 9876543210">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Default delivery address</label>
+                        <textarea name="address" class="form-control" rows="3" placeholder="Your default address...">{{ user.address or '' }}</textarea>
+                    </div>
+                    <div style="display:flex;gap:0.6rem;">
+                        <button type="submit" class="btn btn-amazon btn-lg">Save Changes</button>
+                        <a href="/user-dashboard" class="btn btn-outline btn-lg">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div style="margin-top:0.75rem;text-align:center;">
+            <a href="/user-forgot-password" style="font-size:0.82rem;color:var(--flipkart-blue);">🔑 Change Password</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

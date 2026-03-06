@@ -1,0 +1,35 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Orders{% endblock %}
+{% block page_title %}Manage Orders{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">🛍️ All Orders <span class="badge badge-info">{{ orders|length }}</span></span>
+    </div>
+    {% if orders %}
+    <div class="table-wrapper">
+        <table class="table">
+            <thead>
+                <tr><th>Order #</th><th>Customer</th><th>Email</th><th>Amount</th><th>Status</th><th>Date</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td style="font-weight:700;color:var(--flipkart-blue);">#{{ order.order_id }}</td>
+                    <td style="font-weight:600;font-size:0.85rem;">{{ order.user_name }}</td>
+                    <td style="font-size:0.78rem;color:var(--gray-500);">{{ order.user_email }}</td>
+                    <td style="font-weight:700;color:var(--danger);">₹{{ order.amount }}</td>
+                    <td><span class="badge {% if order.payment_status == 'paid' %}badge-success{% else %}badge-warning{% endif %}">{{ order.payment_status.title() }}</span></td>
+                    <td style="font-size:0.78rem;color:var(--gray-500);">{{ order.created_at | fdate }}</td>
+                    <td><a href="/admin/order/{{ order.order_id }}" class="btn btn-blue btn-sm">View</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state"><div class="icon">📭</div><h3>No orders yet</h3><p>Orders will appear here once customers start purchasing.</p></div>
+    {% endif %}
+</div>
+{% endblock %}

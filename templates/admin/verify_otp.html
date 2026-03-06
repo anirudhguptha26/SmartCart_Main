@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify OTP | SmartCart</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="auth-page">
+    <div class="auth-card fade-in">
+        <div class="auth-logo">
+            <div class="brand">🛒 Smart<span>Cart</span></div>
+        </div>
+        <div style="text-align:center;margin-bottom:1.25rem;">
+            <div style="font-size:2.5rem;">📩</div>
+            <h2 class="auth-title" style="margin-bottom:0.25rem;">Verify OTP</h2>
+            <p style="font-size:0.82rem;color:var(--gray-500);">Enter the OTP sent to your email and create your password.</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        {% endwith %}
+
+        <form method="POST" action="/verify-otp">
+            <div class="form-group">
+                <label class="form-label">OTP Code <span class="required">*</span></label>
+                <input type="text" name="otp" class="form-control" placeholder="Enter 6-digit OTP" maxlength="6" required style="letter-spacing:6px;font-size:1.2rem;text-align:center;">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Create Password <span class="required">*</span></label>
+                <input type="password" name="password" class="form-control" placeholder="Min 6 characters" minlength="6" required>
+            </div>
+            <button type="submit" class="btn btn-amazon btn-full btn-lg">Verify & Register</button>
+        </form>
+
+        <div class="auth-footer">
+            <a href="/admin-signup" style="color:var(--flipkart-blue);">← Go back</a>
+        </div>
+    </div>
+</div>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,515 @@
+{% extends "user/base_user.html" %}
+{% block title %}SmartCart - Shop Online{% endblock %}
+
+{% block content %}
+
+<!-- ══════════════════════════════════════════
+     AMAZON-STYLE IMAGE CAROUSEL
+══════════════════════════════════════════ -->
+<style>
+    /* Carousel wrapper */
+    .hero-carousel {
+        position: relative;
+        width: 100%;
+        overflow: hidden;
+        background: #1a1a2e;
+        user-select: none;
+    }
+
+    /* Slides track */
+    .carousel-track {
+        display: flex;
+        transition: transform 0.55s cubic-bezier(.77, 0, .175, 1);
+        will-change: transform;
+    }
+
+    /* Each slide */
+    .carousel-slide {
+        min-width: 100%;
+        position: relative;
+        height: 380px;
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+    }
+
+    /* Background image */
+    .carousel-slide img.slide-bg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        filter: brightness(0.72);
+        transition: transform 6s ease;
+    }
+
+    .carousel-slide.active img.slide-bg {
+        transform: scale(1.04);
+    }
+
+    /* Gradient overlay */
+    .carousel-slide::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, rgba(0, 0, 0, .65) 0%, rgba(0, 0, 0, .1) 60%, transparent 100%);
+        pointer-events: none;
+    }
+
+    /* Slide content */
+    .slide-content {
+        position: relative;
+        z-index: 2;
+        padding: 0 64px;
+        color: #fff;
+        max-width: 520px;
+        animation: slideIn .6s ease both;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(-30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .slide-tag {
+        display: inline-block;
+        background: #f0c040;
+        color: #111;
+        font-size: .72rem;
+        font-weight: 800;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        padding: 3px 10px;
+        border-radius: 3px;
+        margin-bottom: 12px;
+    }
+
+    .slide-content h2 {
+        font-size: 2rem;
+        font-weight: 800;
+        line-height: 1.2;
+        margin-bottom: 10px;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, .4);
+    }
+
+    .slide-content p {
+        font-size: .95rem;
+        opacity: .88;
+        margin-bottom: 20px;
+        line-height: 1.5;
+    }
+
+    .slide-meta {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 20px;
+        font-size: .82rem;
+        opacity: .8;
+    }
+
+    .slide-meta span {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .slide-btn {
+        display: inline-block;
+        background: #f0c040;
+        color: #111;
+        font-weight: 700;
+        font-size: .9rem;
+        padding: 10px 24px;
+        border-radius: 6px;
+        text-decoration: none;
+        transition: background .2s, transform .15s;
+    }
+
+    .slide-btn:hover {
+        background: #ffd700;
+        transform: translateY(-2px);
+        color: #111;
+    }
+
+    /* Arrow buttons */
+    .carousel-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 10;
+        background: rgba(255, 255, 255, .15);
+        backdrop-filter: blur(4px);
+        border: 1.5px solid rgba(255, 255, 255, .25);
+        color: #fff;
+        width: 44px;
+        height: 64px;
+        border-radius: 4px;
+        font-size: 1.4rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background .2s;
+    }
+
+    .carousel-btn:hover {
+        background: rgba(255, 255, 255, .3);
+    }
+
+    .carousel-btn.prev {
+        left: 10px;
+    }
+
+    .carousel-btn.next {
+        right: 10px;
+    }
+
+    /* Dots */
+    .carousel-dots {
+        position: absolute;
+        bottom: 14px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 7px;
+        z-index: 10;
+    }
+
+    .carousel-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, .45);
+        cursor: pointer;
+        transition: background .3s, transform .3s;
+        border: none;
+        padding: 0;
+    }
+
+    .carousel-dot.active {
+        background: #f0c040;
+        transform: scale(1.3);
+    }
+
+    /* Progress bar */
+    .carousel-progress {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        height: 3px;
+        background: #f0c040;
+        width: 0%;
+        z-index: 10;
+        transition: width linear;
+    }
+
+    @media (max-width: 600px) {
+        .carousel-slide {
+            height: 220px;
+        }
+
+        .slide-content {
+            padding: 0 48px 0 20px;
+        }
+
+        .slide-content h2 {
+            font-size: 1.2rem;
+        }
+
+        .slide-content p {
+            display: none;
+        }
+
+        .slide-meta {
+            display: none;
+        }
+    }
+</style>
+
+<div class="hero-carousel" id="heroCarousel">
+
+    <!-- Progress bar -->
+    <div class="carousel-progress" id="carouselProgress"></div>
+
+    <!-- Slides -->
+    <div class="carousel-track" id="carouselTrack">
+
+        <!-- Slide 1 -->
+        <div class="carousel-slide active">
+            <img class="slide-bg" src="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=1400&q=80"
+                alt="Electronics Sale">
+            <div class="slide-content">
+                <div class="slide-tag">🔥 Hot Deal</div>
+                <h2>Top Electronics<br>Starting ₹99</h2>
+                <p>Bestselling gadgets, accessories & more at unbeatable prices.</p>
+                <div class="slide-meta">
+                    <span>⚡ Wide Selection</span>
+                    <span>🏷️ Top Brands</span>
+                </div>
+                <a href="/user/products" class="slide-btn">Shop Now →</a>
+            </div>
+        </div>
+
+        <!-- Slide 2 -->
+        <div class="carousel-slide">
+            <img class="slide-bg" src="https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1400&q=80"
+                alt="Fashion Sale">
+            <div class="slide-content">
+                <div class="slide-tag">👗 New Arrivals</div>
+                <h2>Trending Fashion<br>Upto 50% Off</h2>
+                <p>Stay stylish with the latest collections from top brands.</p>
+                <div class="slide-meta">
+                    <span>🚚 Free Delivery</span>
+                    <span>↩️ Easy Returns</span>
+                </div>
+                <a href="/user/products" class="slide-btn">Explore Now →</a>
+            </div>
+        </div>
+
+        <!-- Slide 3 -->
+        <div class="carousel-slide">
+            <img class="slide-bg" src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1400&q=80"
+                alt="Kitchen Sale">
+            <div class="slide-content">
+                <div class="slide-tag">🏠 Home Essentials</div>
+                <h2>Kitchen & Home<br>Best Deals</h2>
+                <p>Everything you need for your home at the best prices.</p>
+                <div class="slide-meta">
+                    <span>✅ Quality Assured</span>
+                    <span>📦 Fast Shipping</span>
+                </div>
+                <a href="/user/products" class="slide-btn">Shop Home →</a>
+            </div>
+        </div>
+
+        <!-- Slide 4 -->
+        <div class="carousel-slide">
+            <img class="slide-bg" src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=1400&q=80"
+                alt="Sports Sale">
+            <div class="slide-content">
+                <div class="slide-tag">💪 Sports & Fitness</div>
+                <h2>Fitness Gear<br>Starting ₹199</h2>
+                <p>Level up your workout with premium sports equipment.</p>
+                <div class="slide-meta">
+                    <span>🏋️ Premium Quality</span>
+                    <span>🔒 Secure Payment</span>
+                </div>
+                <a href="/user/products" class="slide-btn">Get Fit →</a>
+            </div>
+        </div>
+
+    </div><!-- /carousel-track -->
+
+    <!-- Arrows -->
+    <button class="carousel-btn prev" id="carouselPrev">&#8249;</button>
+    <button class="carousel-btn next" id="carouselNext">&#8250;</button>
+
+    <!-- Dots -->
+    <div class="carousel-dots" id="carouselDots"></div>
+
+</div><!-- /hero-carousel -->
+
+<script>
+    (function () {
+        const track = document.getElementById('carouselTrack');
+        const slides = track.querySelectorAll('.carousel-slide');
+        const dotsWrap = document.getElementById('carouselDots');
+        const progress = document.getElementById('carouselProgress');
+        const TOTAL = slides.length;
+        const INTERVAL = 4500; // ms between slides
+        let current = 0;
+        let timer = null;
+        let progTimer = null;
+
+        // Build dots
+        slides.forEach(function (_, i) {
+            const d = document.createElement('button');
+            d.className = 'carousel-dot' + (i === 0 ? ' active' : '');
+            d.addEventListener('click', function () { goTo(i); });
+            dotsWrap.appendChild(d);
+        });
+
+        function getDots() { return dotsWrap.querySelectorAll('.carousel-dot'); }
+
+        function goTo(idx) {
+            slides[current].classList.remove('active');
+            getDots()[current].classList.remove('active');
+            current = (idx + TOTAL) % TOTAL;
+            slides[current].classList.add('active');
+            getDots()[current].classList.add('active');
+            track.style.transform = 'translateX(-' + (current * 100) + '%)';
+            resetProgress();
+        }
+
+        function next() { goTo(current + 1); }
+        function prev() { goTo(current - 1); }
+
+        function startAuto() {
+            clearInterval(timer);
+            timer = setInterval(next, INTERVAL);
+        }
+
+        // Progress bar animation
+        function resetProgress() {
+            clearTimeout(progTimer);
+            progress.style.transition = 'none';
+            progress.style.width = '0%';
+            progTimer = setTimeout(function () {
+                progress.style.transition = 'width ' + INTERVAL + 'ms linear';
+                progress.style.width = '100%';
+            }, 50);
+        }
+
+        document.getElementById('carouselNext').addEventListener('click', function () {
+            next(); startAuto();
+        });
+        document.getElementById('carouselPrev').addEventListener('click', function () {
+            prev(); startAuto();
+        });
+
+        // Pause on hover
+        document.getElementById('heroCarousel').addEventListener('mouseenter', function () {
+            clearInterval(timer);
+            clearTimeout(progTimer);
+        });
+        document.getElementById('heroCarousel').addEventListener('mouseleave', function () {
+            startAuto();
+            resetProgress();
+        });
+
+        // Touch / swipe support
+        let touchStartX = 0;
+        track.addEventListener('touchstart', function (e) {
+            touchStartX = e.touches[0].clientX;
+        }, { passive: true });
+        track.addEventListener('touchend', function (e) {
+            const diff = touchStartX - e.changedTouches[0].clientX;
+            if (Math.abs(diff) > 40) { diff > 0 ? next() : prev(); startAuto(); }
+        }, { passive: true });
+
+        // Keyboard support
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'ArrowRight') { next(); startAuto(); }
+            if (e.key === 'ArrowLeft') { prev(); startAuto(); }
+        });
+
+        // Init
+        startAuto();
+        resetProgress();
+    })();
+</script>
+
+<!-- ══════════════════════════════════════════
+     REST OF PAGE
+══════════════════════════════════════════ -->
+<div class="container">
+
+    <!-- Welcome strip -->
+    <div
+        style="margin-top:1rem;padding:10px 16px;background:#fff8e1;border:1px solid #f0c040;border-radius:8px;font-size:.9rem;font-weight:600;color:#7a5c00;">
+        👋 Welcome back, <strong>{{ user_name.split()[0] }}</strong>! Great deals are waiting for you.
+    </div>
+
+
+
+    <!-- Deal Banner -->
+    <div class="deal-banner" style="margin-top:1rem;">
+        🔥 <strong>Today's Deals</strong> — Limited time offers on top products!
+        <a href="/user/products" style="color:var(--amazon-yellow);margin-left:auto;font-size:0.82rem;">See All Deals
+            →</a>
+    </div>
+
+    <!-- Featured Products -->
+    <div style="margin-top:1rem;">
+        <div class="section-header">
+            <div class="section-title">⭐ Featured Products</div>
+            <a href="/user/products" class="section-view-all">View All →</a>
+        </div>
+
+        {% if featured_products %}
+        <div style="background:var(--white);border:1px solid var(--gray-300);border-radius:var(--radius-sm);">
+            <div class="products-grid">
+                {% for product in featured_products %}
+                <div class="product-card" onclick="window.location='/user/product/{{ product.product_id }}'">
+                    <div class="product-card-img-wrap">
+                        <img src="/static/uploads/product_images/{{ product.image }}" class="product-card-img"
+                            alt="{{ product.name }}" loading="lazy">
+                    </div>
+                    <div class="product-card-body">
+                        <div class="product-card-name">{{ product.name }}</div>
+                        <div class="product-card-rating">
+                            <span class="rating-stars">★ 4.2</span>
+                            <span class="rating-count">(1,234)</span>
+                        </div>
+                        <div class="product-card-price">
+                            <span class="price-main">₹{{ product.price }}</span>
+                        </div>
+                        <div class="product-card-stock
+                            {% if product.quantity == 0 %}out-stock
+                            {% elif product.quantity <= 5 %}low-stock
+                            {% else %}in-stock{% endif %}">
+                            {% if product.quantity == 0 %}Out of Stock
+                            {% elif product.quantity <= 5 %}Only {{ product.quantity }} left! {% else %}In Stock{% endif
+                                %} </div>
+                        </div>
+                        {% if product.quantity > 0 %}
+                        <div class="product-card-footer">
+                            <a href="/user/add-to-cart/{{ product.product_id }}" class="btn btn-amazon btn-full btn-sm"
+                                onclick="event.stopPropagation();">🛒 Add to Cart</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% else %}
+            <div class="empty-state"
+                style="background:var(--white);border:1px solid var(--gray-300);border-radius:var(--radius-sm);">
+                <div class="icon">📦</div>
+                <h3>No products yet</h3>
+                <p>Check back soon for amazing products!</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Why SmartCart -->
+        <div
+            style="margin:1.5rem 0;background:var(--white);border:1px solid var(--gray-300);border-radius:var(--radius-sm);padding:1.5rem;">
+            <div style="font-size:1rem;font-weight:700;text-align:center;margin-bottom:1.25rem;color:var(--gray-900);">
+                Why SmartCart?</div>
+            <div
+                style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1.25rem;text-align:center;">
+                <div>
+                    <div style="font-size:2rem;margin-bottom:0.35rem;">🚚</div>
+                    <div style="font-weight:700;font-size:0.88rem;margin-bottom:0.2rem;">Fast Delivery</div>
+                    <div style="font-size:0.78rem;color:var(--gray-500);">Delivered to your door quickly</div>
+                </div>
+                <div>
+                    <div style="font-size:2rem;margin-bottom:0.35rem;">🔒</div>
+                    <div style="font-weight:700;font-size:0.88rem;margin-bottom:0.2rem;">Secure Payments</div>
+                    <div style="font-size:0.78rem;color:var(--gray-500);">Razorpay secured checkout</div>
+                </div>
+                <div>
+                    <div style="font-size:2rem;margin-bottom:0.35rem;">✅</div>
+                    <div style="font-weight:700;font-size:0.88rem;margin-bottom:0.2rem;">Quality Products</div>
+                    <div style="font-size:0.78rem;color:var(--gray-500);">100% genuine items</div>
+                </div>
+                <div>
+                    <div style="font-size:2rem;margin-bottom:0.35rem;">📄</div>
+                    <div style="font-weight:700;font-size:0.88rem;margin-bottom:0.2rem;">PDF Invoices</div>
+                    <div style="font-size:0.78rem;color:var(--gray-500);">Instant invoice download</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    {% endblock %}

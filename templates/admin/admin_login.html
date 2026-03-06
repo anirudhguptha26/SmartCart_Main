@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Sign In | SmartCart</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛒</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            overflow-x: hidden;
+            height: 100%;
+        }
+
+        body {
+            font-family: 'Amazon Ember', Arial, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #eaeded;
+            color: #111;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .main-content {
+            flex: 1;
+        }
+
+        .site-footer {
+            margin-top: auto;
+            flex-shrink: 0;
+        }
+
+        /* ════════════════════════════════════════
+           AUTH LAYOUT
+        ════════════════════════════════════════ */
+        .auth-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+
+        .auth-card {
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 380px;
+            padding: 2rem;
+        }
+
+        .auth-logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .brand {
+            font-size: 1.8rem;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            color: #131921;
+        }
+
+        .brand span {
+            color: #ff9900;
+        }
+
+        .admin-badge {
+            display: inline-block;
+            background: #ff9900;
+            color: white;
+            padding: 0.25rem 0.6rem;
+            border-radius: 3px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-top: 0.5rem;
+            letter-spacing: 0.5px;
+        }
+
+        .auth-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: #111;
+        }
+
+        /* ════════════════════════════════════════
+           FORMS
+        ════════════════════════════════════════ */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #111;
+            margin-bottom: 0.4rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #bbb;
+            border-radius: 3px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            background: white;
+            color: #111;
+            transition: border-color 0.2s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #ff9900;
+            box-shadow: 0 0 0 3px rgba(255, 153, 0, 0.1);
+        }
+
+        .form-control::placeholder {
+            color: #aaa;
+        }
+
+        /* ════════════════════════════════════════
+           BUTTONS
+        ════════════════════════════════════════ */
+        .btn-signin {
+            width: 100%;
+            padding: 0.9rem;
+            background: linear-gradient(to bottom, #f7dfa5, #f0c14b);
+            color: #111;
+            border: 1px solid #a88734;
+            border-radius: 3px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-signin:hover {
+            background: linear-gradient(to bottom, #f5d78e, #edb932);
+        }
+
+        .btn-signup {
+            width: 100%;
+            padding: 0.7rem;
+            background: white;
+            color: #0066cc;
+            border: 1.5px solid #0066cc;
+            border-radius: 3px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-signup:hover {
+            background: #f0f5ff;
+        }
+
+        /* ════════════════════════════════════════
+           LINKS & DIVIDERS
+        ════════════════════════════════════════ */
+        .forgot-link {
+            text-align: right;
+            margin-bottom: 1.5rem;
+        }
+
+        .forgot-link a {
+            font-size: 0.85rem;
+            color: #0066cc;
+            text-decoration: none;
+        }
+
+        .forgot-link a:hover {
+            color: #c45500;
+        }
+
+        .signup-section {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #eee;
+            text-align: center;
+        }
+
+        .signup-section p {
+            font-size: 0.85rem;
+            color: #555;
+            margin-bottom: 1rem;
+        }
+
+        .user-link {
+            text-align: center;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #eee;
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .user-link a {
+            color: #0066cc;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .user-link a:hover {
+            color: #c45500;
+        }
+
+        /* ════════════════════════════════════════
+           ALERTS
+        ════════════════════════════════════════ */
+        .alert {
+            padding: 10px 12px;
+            margin-bottom: 1rem;
+            border-radius: 3px;
+            font-size: 0.85rem;
+            border-left: 4px solid transparent;
+        }
+
+        .alert-success {
+            background: #e8f5e9;
+            color: #1b5e20;
+            border-color: #2e7d32;
+        }
+
+        .alert-danger {
+            background: #ffebee;
+            color: #b71c1c;
+            border-color: #c62828;
+        }
+
+        .alert-warning {
+            background: #fff8e1;
+            color: #6d4c00;
+            border-color: #f9a825;
+        }
+
+        .alert-info {
+            background: #e3f2fd;
+            color: #0d47a1;
+            border-color: #1565c0;
+        }
+
+        /* ════════════════════════════════════════
+           FOOTER
+        ════════════════════════════════════════ */
+        .site-footer {
+            background: #131921;
+            color: rgba(255, 255, 255, 0.75);
+            border-top: 1px solid #37475a;
+        }
+
+        .footer-top {
+            background: #37475a;
+            text-align: center;
+            padding: 13px;
+            font-size: 0.82rem;
+            color: #fff;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .footer-top:hover {
+            background: #485769;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+            padding: 2rem 3rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .footer-col h4 {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 0.75rem;
+        }
+
+        .footer-col a,
+        .footer-col p {
+            display: block;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.65);
+            margin-bottom: 5px;
+            transition: color 0.15s;
+            text-decoration: none;
+        }
+
+        .footer-col a:hover {
+            color: #fff;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #3a4553;
+            padding: 14px;
+            text-align: center;
+            font-size: 0.78rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* ════════════════════════════════════════
+           RESPONSIVE
+        ════════════════════════════════════════ */
+        @media (max-width: 600px) {
+            .auth-card {
+                max-width: 100%;
+                padding: 1.5rem;
+            }
+
+            .auth-title {
+                font-size: 1.1rem;
+            }
+
+            .auth-logo {
+                margin-bottom: 1.5rem;
+            }
+
+            .brand {
+                font-size: 1.5rem;
+            }
+
+            .form-label {
+                font-size: 0.78rem;
+            }
+
+            .form-control {
+                font-size: 16px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .footer-grid {
+                grid-template-columns: repeat(2, 1fr);
+                padding: 1.5rem 1rem;
+                gap: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .footer-grid {
+                grid-template-columns: repeat(2, 1fr);
+                padding: 1rem;
+            }
+
+            .footer-col h4 {
+                font-size: 0.82rem;
+            }
+
+            .footer-col a {
+                font-size: 0.74rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="auth-wrapper">
+            <div class="auth-card">
+                <div class="auth-logo">
+                    <div class="brand">🛒 Smart<span>Cart</span></div>
+                    <div class="admin-badge">⚙️ Admin Panel</div>
+                </div>
+
+                <h2 class="auth-title">Admin Sign In</h2>
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <form method="POST" action="/admin-login">
+                    <div class="form-group">
+                        <label class="form-label">Email Address</label>
+                        <input type="email" name="email" class="form-control" placeholder="Enter your admin email" required autofocus>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <input type="password" name="password" class="form-control" placeholder="Enter your password" required>
+                    </div>
+
+                    <div class="forgot-link">
+                        <a href="/admin-forgot-password">Forgot Password?</a>
+                    </div>
+
+                    <button type="submit" class="btn-signin">Sign In</button>
+                </form>
+
+                <div class="signup-section">
+                    <p>New Admin?</p>
+                    <a href="/admin-signup" class="btn-signup">Create Admin Account</a>
+                </div>
+
+                <div class="user-link">
+                    Are you a customer? <a href="/user-login">Customer Login</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+            ▲ Back to top
+        </div>
+        <div class="footer-grid">
+            <div class="footer-col">
+                <h4>Get to Know Us</h4>
+                <a href="#">About SmartCart</a>
+                <a href="#">Careers</a>
+                <a href="#">Press Releases</a>
+                <a href="#">SmartCart Blog</a>
+            </div>
+            <div class="footer-col">
+                <h4>Make Money With Us</h4>
+                <a href="#">Sell on SmartCart</a>
+                <a href="#">Become an Affiliate</a>
+                <a href="#">Advertise Your Products</a>
+            </div>
+            <div class="footer-col">
+                <h4>Let Us Help You</h4>
+                <a href="#">Your Account</a>
+                <a href="#">Your Orders</a>
+                <a href="#">Returns &amp; Replacements</a>
+                <a href="#">Help</a>
+            </div>
+            <div class="footer-col">
+                <h4>SmartCart</h4>
+                <p>India</p>
+                <p>English</p>
+                <p>₹ INR</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <h3>© 2026 SmartCart All rights reserved Designed & Developed By Varshith Soma💖</h3>
+        </div>
+    </footer>
+</body>
+
+</html>

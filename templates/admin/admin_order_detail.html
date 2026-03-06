@@ -1,0 +1,68 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Order #{{ order.order_id }}{% endblock %}
+{% block page_title %}Order Details{% endblock %}
+
+{% block content %}
+<div style="max-width:800px;">
+    <div class="card" style="margin-bottom:1rem;">
+        <div class="card-header">
+            <span class="card-title">🛍️ Order #{{ order.order_id }}</span>
+            <div style="display:flex;gap:0.5rem;align-items:center;">
+                <span class="badge {% if order.payment_status == 'paid' %}badge-success{% else %}badge-warning{% endif %}" style="padding:0.3rem 0.75rem;font-size:0.82rem;">{{ order.payment_status.title() }}</span>
+                <a href="/admin/orders" class="btn btn-outline btn-sm">← Back</a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;">
+                <div>
+                    <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--flipkart-blue);margin-bottom:0.4rem;">Customer</div>
+                    <div style="font-size:0.88rem;line-height:2;color:var(--gray-700);">
+                        <strong>Name:</strong> {{ order.user_name }}<br>
+                        <strong>Email:</strong> {{ order.user_email }}<br>
+                        <strong>Phone:</strong> {{ order.user_phone or 'N/A' }}
+                    </div>
+                </div>
+                <div>
+                    <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--flipkart-blue);margin-bottom:0.4rem;">Order Info</div>
+                    <div style="font-size:0.88rem;line-height:2;color:var(--gray-700);">
+                        <strong>Amount:</strong> <span style="color:var(--danger);font-weight:700;">₹{{ order.amount }}</span><br>
+                        <strong>Payment ID:</strong> <span style="font-size:0.78rem;">{{ order.razorpay_payment_id or 'N/A' }}</span><br>
+                        <strong>Date:</strong> {{ order.created_at | fdate if order.created_at else 'N/A' }}
+                    </div>
+                </div>
+            </div>
+            {% if order.delivery_address %}
+            <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--gray-100);">
+                <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--flipkart-blue);margin-bottom:0.25rem;">Delivery Address</div>
+                <div style="font-size:0.88rem;color:var(--gray-700);">{{ order.delivery_address }}</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header"><span class="card-title">📦 Order Items</span></div>
+        <div class="table-wrapper">
+            <table class="table">
+                <thead><tr><th>Product</th><th>Qty</th><th>Unit Price</th><th>Total</th></tr></thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td style="font-weight:600;">{{ item.product_name }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>₹{{ item.price }}</td>
+                        <td style="font-weight:700;">₹{{ "%.2f"|format(item.price * item.quantity) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3" style="text-align:right;font-weight:700;padding:0.875rem 1rem;">Grand Total</td>
+                        <td style="font-weight:800;font-size:1.05rem;color:var(--danger);">₹{{ order.amount }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

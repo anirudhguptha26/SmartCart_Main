@@ -1,0 +1,78 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Admin Registration Requests{% endblock %}
+{% block page_title %}Admin Registration Requests{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">👥 Admin Registration Requests
+            <span class="badge badge-info" style="margin-left:0.5rem;">{{ requests|length }}</span>
+        </span>
+    </div>
+
+    {% if requests %}
+    <div class="table-wrapper">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Submitted</th>
+                    <th>Status</th>
+                    <th style="text-align:center;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for req in requests %}
+                <tr>
+                    <td style="color:var(--gray-500);font-weight:600;">{{ req.request_id }}</td>
+                    <td style="font-weight:600;">{{ req.name }}</td>
+                    <td style="font-size:0.82rem;color:var(--gray-500);">{{ req.email }}</td>
+                    <td style="font-size:0.82rem;color:var(--gray-500);">{{ req.created_at | fdate }}</td>
+                    <td>
+                        {% if req.status == 'pending' %}
+                        <span class="badge badge-warning">⏳ Pending</span>
+                        {% elif req.status == 'approved' %}
+                        <span class="badge badge-success">✅ Approved</span>
+                        {% else %}
+                        <span class="badge badge-danger">❌ Rejected</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div style="display:flex;gap:0.4rem;justify-content:center;">
+                            {% if req.status == 'pending' %}
+                            <a href="/admin/approve-request/{{ req.request_id }}" class="btn btn-success btn-sm"
+                               data-confirm="Approve admin account for {{ req.name }}?">✅ Approve</a>
+                            <a href="/admin/reject-request/{{ req.request_id }}" class="btn btn-danger btn-sm"
+                               data-confirm="Reject this registration request?">❌ Reject</a>
+                            {% else %}
+                            <span style="font-size:0.78rem;color:var(--gray-500);">—</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="icon">📭</div>
+        <h3>No registration requests</h3>
+        <p>New admin registration requests will appear here.</p>
+    </div>
+    {% endif %}
+</div>
+
+<div class="card" style="margin-top:1rem;">
+    <div class="card-body">
+        <div style="font-size:0.85rem;color:var(--gray-700);line-height:1.7;">
+            <strong>ℹ️ How Admin Approvals Work:</strong><br>
+            When a new user registers as an admin, their request is held here until you approve it.
+            Approved admins can log in and manage products and orders.
+            Only the <strong>Super Admin</strong> can approve or reject requests.
+        </div>
+    </div>
+</div>
+{% endblock %}

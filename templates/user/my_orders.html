@@ -1,0 +1,55 @@
+{% extends "user/base_user.html" %}
+{% block title %}My Orders | SmartCart{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+        <h1 style="font-size:1.2rem;font-weight:700;">Your Orders</h1>
+        <a href="/user/products" class="btn btn-outline btn-sm">← Continue Shopping</a>
+    </div>
+
+    {% if orders|length == 0 %}
+    <div style="background:var(--white);border:1px solid var(--gray-300);border-radius:var(--radius-sm);padding:3rem;text-align:center;">
+        <div style="font-size:4rem;margin-bottom:0.75rem;">📦</div>
+        <h3 style="font-size:1.1rem;font-weight:600;color:var(--gray-900);margin-bottom:0.4rem;">No orders yet</h3>
+        <p style="color:var(--gray-500);font-size:0.88rem;margin-bottom:1.25rem;">You haven't placed any orders. Start shopping!</p>
+        <a href="/user/products" class="btn btn-primary btn-lg">🛍️ Shop Now</a>
+    </div>
+    {% else %}
+    <div style="display:flex;flex-direction:column;gap:0.75rem;">
+        {% for order in orders %}
+        <div style="background:var(--white);border:1px solid var(--gray-300);border-radius:var(--radius-sm);overflow:hidden;">
+            <div style="background:var(--gray-50);border-bottom:1px solid var(--gray-300);padding:0.75rem 1.25rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;">
+                <div style="display:flex;gap:2rem;flex-wrap:wrap;">
+                    <div>
+                        <div style="font-size:0.65rem;text-transform:uppercase;font-weight:700;color:var(--gray-500);">Order Placed</div>
+                        <div style="font-size:0.82rem;font-weight:600;">{{ order.created_at.strftime('%d %b %Y') if order.created_at else 'N/A' }}</div>
+                    </div>
+                    <div>
+                        <div style="font-size:0.65rem;text-transform:uppercase;font-weight:700;color:var(--gray-500);">Total</div>
+                        <div style="font-size:0.82rem;font-weight:600;">₹{{ order.amount }}</div>
+                    </div>
+                </div>
+                <div style="font-size:0.82rem;color:var(--gray-500);">Order # <strong style="color:var(--flipkart-blue);">{{ order.order_id }}</strong></div>
+            </div>
+            <div style="padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;">
+                <div style="display:flex;align-items:center;gap:0.75rem;">
+                    <div style="width:42px;height:42px;background:var(--primary-light);border-radius:var(--radius-xs);display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0;">📦</div>
+                    <div>
+                        <span class="badge {% if order.payment_status == 'paid' %}badge-success{% else %}badge-warning{% endif %}" style="font-size:0.82rem;padding:0.25rem 0.6rem;">
+                            {% if order.payment_status == 'paid' %}✅ Delivered{% else %}⏳ Pending{% endif %}
+                        </span>
+                        <div style="font-size:0.78rem;color:var(--gray-500);margin-top:0.2rem;">Payment {{ order.payment_status.title() }}</div>
+                    </div>
+                </div>
+                <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                    <a href="/user/order-success/{{ order.order_id }}" class="btn btn-blue btn-sm">View Details</a>
+                    <a href="/user/download-invoice/{{ order.order_id }}" class="btn btn-outline btn-sm">📄 Invoice</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
